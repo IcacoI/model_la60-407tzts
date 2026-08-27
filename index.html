@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Un pensiero speciale per te</title>
-    <!-- Google Fonts per stile vintage anni '60 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
     
     <style>
         * {
@@ -29,7 +28,7 @@
             color: #2b2621;
         }
 
-        /* Schermata d'avvio */
+        /* Schermata iniziale con l'icona al centro */
         #start-screen {
             position: fixed;
             top: 0;
@@ -51,40 +50,41 @@
             border: 2px dashed #d4af37;
             padding: 8px 16px;
             color: #d4af37;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             letter-spacing: 3px;
             text-transform: uppercase;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
             border-radius: 4px;
         }
 
-        .start-btn {
-            background: #a83232;
-            color: #fbf8ef;
-            border: none;
-            padding: 16px 36px;
-            font-family: 'Special Elite', monospace;
-            font-size: 1.2rem;
+        /* Icona Busta Vintage Cliccabile */
+        .envelope-icon {
+            font-size: 5rem;
             cursor: pointer;
-            border-radius: 4px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
-            transition: transform 0.2s, background-color 0.2s;
-            letter-spacing: 1px;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
+            animation: float 3s ease-in-out infinite;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            user-select: none;
         }
 
-        .start-btn:hover {
-            background: #c43c3c;
-            transform: scale(1.05);
+        .envelope-icon:hover {
+            transform: scale(1.15) rotate(3deg);
+            filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.6));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .subtitle-start {
             color: #a0988e;
-            margin-top: 15px;
-            font-size: 0.85rem;
-            font-style: italic;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
         }
 
-        /* Foglio di carta della macchina da scrivere */
+        /* Foglio di carta */
         .paper-container {
             width: 100%;
             max-width: 680px;
@@ -106,7 +106,6 @@
             transform: translateY(0);
         }
 
-        /* Timbro Vintage del Secondo Mese */
         .stamp {
             position: absolute;
             top: 25px;
@@ -131,7 +130,6 @@
             color: #24201c;
         }
 
-        /* Cursore lampeggiante della macchina da scrivere */
         .cursor {
             display: inline-block;
             width: 9px;
@@ -147,7 +145,6 @@
             50% { opacity: 0; }
         }
 
-        /* Footer con controlli musica */
         .controls {
             position: fixed;
             bottom: 20px;
@@ -172,35 +169,25 @@
             cursor: pointer;
         }
 
-        .controls button:hover {
-            color: #d4af37;
-        }
-
-        /* Responsiveness per Smartphone */
         @media (max-width: 600px) {
-            .paper-container {
-                padding: 45px 25px 50px 25px;
-            }
-            .stamp {
-                top: 15px;
-                right: 15px;
-                font-size: 0.65rem;
-                padding: 4px 8px;
-            }
-            .typewriter-text {
-                font-size: 1rem;
-                line-height: 2.2rem;
-            }
+            .paper-container { padding: 45px 25px 50px 25px; }
+            .typewriter-text { font-size: 1rem; line-height: 2.2rem; }
+            .envelope-icon { font-size: 4rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Schermata iniziale -->
+    <!-- Schermata iniziale con icona centrale -->
     <div id="start-screen">
-        <div class="badge-60s">✦ Spedizione Riservata • Anni '60 ✦</div>
-        <button class="start-btn" onclick="startExperience()">Inserisci il Foglio nella Macchina</button>
-        <div class="subtitle-start">(Attiva l'audio per un'esperienza completa)</div>
+        <div class="badge-60s">✦ Riservato per te ✦</div>
+        
+        <!-- Icona cliccabile -->
+        <div class="envelope-icon" onclick="startExperience()" title="Clicca per aprire">
+            ✉️
+        </div>
+        
+        <div class="subtitle-start">Clicca sulla busta per aprire la lettera</div>
     </div>
 
     <!-- Foglio di carta -->
@@ -209,16 +196,13 @@
         <span class="typewriter-text" id="typewriter"></span><span class="cursor" id="cursor"></span>
     </div>
 
-    <!-- Controlli Audio (visibili dopo l'avvio) -->
+    <!-- Controlli Musica -->
     <div class="controls" id="audio-controls" style="display: none;">
         <button id="toggle-music" onclick="toggleMusic()">🎵 Musica: ON</button>
     </div>
 
     <script>
-        // =========================================================
-        // PERSONALIZZA QUI IL TUO TESTO
-        // =========================================================
-        const letterText = `Cara dayna,
+        const letterText = `Cara [Nome],
 
 Due mesi fa abbiamo iniziato questo viaggio insieme e, anche se ci separano i chilometri, ogni singolo giorno trascorso a parlarti mi sembra di essere proprio lì vicino a te.
 
@@ -227,59 +211,41 @@ Se potessi viaggiare nel tempo, mi piacerebbe portarti in un piccolo bar degli a
 Grazie per questi primi due mesi fantastici. Questa è solo la nostra prima canzone.
 
 Con tutto il mio affetto,
-your love`;
+[Il Tuo Nome]`;
 
-        // =========================================================
-        // LOGICA DI SCRITTURA AUDIO & EFFETTI
-        // =========================================================
-        const typingSpeed = 65; // Velocità di battitura (ms per carattere)
+        const typingSpeed = 65;
         let index = 0;
-        let isTyping = false;
         let musicPlaying = true;
 
-        // Sintetizzatore Audio Web (Genera suoni di macchina da scrivere senza file esterni)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // Suono del tasto meccanico
         function playKeySound() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(120 + Math.random() * 80, audioCtx.currentTime);
-            
             gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
-            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
             osc.start();
             osc.stop(audioCtx.currentTime + 0.04);
         }
 
-        // Suono di campanello a fine riga
         function playBellSound() {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.type = 'sine';
             osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
-            
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
             osc.start();
             osc.stop(audioCtx.currentTime + 0.6);
         }
 
-        // Musica di Sottofondo Anni '60
         const backgroundMusic = new Audio("https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3");
         backgroundMusic.loop = true;
         backgroundMusic.volume = 0.25;
@@ -291,10 +257,7 @@ your love`;
                 document.getElementById('paper').classList.add('visible');
                 document.getElementById('audio-controls').style.display = 'flex';
                 
-                // Avvia Musica
-                backgroundMusic.play().catch(() => console.log("Audio non avviato automaticamente"));
-                
-                // Avvia Scrittura
+                backgroundMusic.play().catch(() => {});
                 setTimeout(typeWriter, 400);
             }, 800);
         }
@@ -302,25 +265,13 @@ your love`;
         function typeWriter() {
             if (index < letterText.length) {
                 const char = letterText.charAt(index);
-                const typewriterElem = document.getElementById("typewriter");
+                document.getElementById("typewriter").textContent += char;
 
-                typewriterElem.textContent += char;
-
-                // Suono del tasto (tranne per gli spazi)
-                if (char !== ' ' && char !== '\n') {
-                    playKeySound();
-                }
-
-                // Campanello se va a capo
-                if (char === '\n') {
-                    playBellSound();
-                }
+                if (char !== ' ' && char !== '\n') playKeySound();
+                if (char === '\n') playBellSound();
 
                 index++;
-                
-                // Variazione casuale della velocità per simulare battitura reale
-                const randomSpeed = typingSpeed + (Math.random() * 40 - 20);
-                setTimeout(typeWriter, randomSpeed);
+                setTimeout(typeWriter, typingSpeed + (Math.random() * 40 - 20));
             } else {
                 setTimeout(() => {
                     document.getElementById('cursor').style.display = 'none';
