@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Un pensiero speciale per te</title>
+    <!-- Google Fonts per stile vintage anni '60 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #1a1815;
+            background-image: radial-gradient(#2d2923 1px, transparent 0);
+            background-size: 24px 24px;
+            font-family: 'Special Elite', 'Courier Prime', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #2b2621;
+        }
+
+        /* Schermata d'avvio */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #121110;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.8s ease;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .badge-60s {
+            border: 2px dashed #d4af37;
+            padding: 8px 16px;
+            color: #d4af37;
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .start-btn {
+            background: #a83232;
+            color: #fbf8ef;
+            border: none;
+            padding: 16px 36px;
+            font-family: 'Special Elite', monospace;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: transform 0.2s, background-color 0.2s;
+            letter-spacing: 1px;
+        }
+
+        .start-btn:hover {
+            background: #c43c3c;
+            transform: scale(1.05);
+        }
+
+        .subtitle-start {
+            color: #a0988e;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        /* Foglio di carta della macchina da scrivere */
+        .paper-container {
+            width: 100%;
+            max-width: 680px;
+            background: #fbf8ef;
+            background-image: linear-gradient(#e8e2d5 1px, transparent 1px);
+            background-size: 100% 2.2rem;
+            padding: 60px 50px 70px 50px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0,0,0,0.05);
+            border-radius: 2px;
+            position: relative;
+            min-height: 520px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .paper-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Timbro Vintage del Secondo Mese */
+        .stamp {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            border: 3px double #a83232;
+            color: #a83232;
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transform: rotate(-5deg);
+            opacity: 0.85;
+            user-select: none;
+        }
+
+        .typewriter-text {
+            font-size: 1.15rem;
+            line-height: 2.2rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #24201c;
+        }
+
+        /* Cursore lampeggiante della macchina da scrivere */
+        .cursor {
+            display: inline-block;
+            width: 9px;
+            height: 1.2rem;
+            background-color: #24201c;
+            margin-left: 2px;
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Footer con controlli musica */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(26, 24, 21, 0.85);
+            border: 1px solid #443e35;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 50;
+            backdrop-filter: blur(5px);
+        }
+
+        .controls button {
+            background: none;
+            border: none;
+            color: #fbf8ef;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            color: #d4af37;
+        }
+
+        /* Responsiveness per Smartphone */
+        @media (max-width: 600px) {
+            .paper-container {
+                padding: 45px 25px 50px 25px;
+            }
+            .stamp {
+                top: 15px;
+                right: 15px;
+                font-size: 0.65rem;
+                padding: 4px 8px;
+            }
+            .typewriter-text {
+                font-size: 1rem;
+                line-height: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Schermata iniziale -->
+    <div id="start-screen">
+        <div class="badge-60s">✦ Spedizione Riservata • Anni '60 ✦</div>
+        <button class="start-btn" onclick="startExperience()">Inserisci il Foglio nella Macchina</button>
+        <div class="subtitle-start">(Attiva l'audio per un'esperienza completa)</div>
+    </div>
+
+    <!-- Foglio di carta -->
+    <div class="paper-container" id="paper">
+        <div class="stamp">2° Mese • Distanza Annullata</div>
+        <span class="typewriter-text" id="typewriter"></span><span class="cursor" id="cursor"></span>
+    </div>
+
+    <!-- Controlli Audio (visibili dopo l'avvio) -->
+    <div class="controls" id="audio-controls" style="display: none;">
+        <button id="toggle-music" onclick="toggleMusic()">🎵 Musica: ON</button>
+    </div>
+
+    <script>
+        // =========================================================
+        // PERSONALIZZA QUI IL TUO TESTO
+        // =========================================================
+        const letterText = `Cara dayna,
+
+Due mesi fa abbiamo iniziato questo viaggio insieme e, anche se ci separano i chilometri, ogni singolo giorno trascorso a parlarti mi sembra di essere proprio lì vicino a te.
+
+Se potessi viaggiare nel tempo, mi piacerebbe portarti in un piccolo bar degli anni '60, mettere un vinile sul jukebox e ballare un lento senza pensare al tempo che passa. Ma in fondo, anche attraverso uno schermo, riesci a rendere magico ogni momento.
+
+Grazie per questi primi due mesi fantastici. Questa è solo la nostra prima canzone.
+
+Con tutto il mio affetto,
+your love`;
+
+        // =========================================================
+        // LOGICA DI SCRITTURA AUDIO & EFFETTI
+        // =========================================================
+        const typingSpeed = 65; // Velocità di battitura (ms per carattere)
+        let index = 0;
+        let isTyping = false;
+        let musicPlaying = true;
+
+        // Sintetizzatore Audio Web (Genera suoni di macchina da scrivere senza file esterni)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Suono del tasto meccanico
+        function playKeySound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(120 + Math.random() * 80, audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.04);
+        }
+
+        // Suono di campanello a fine riga
+        function playBellSound() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.6);
+        }
+
+        // Musica di Sottofondo Anni '60
+        const backgroundMusic = new Audio("https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3");
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.25;
+
+        function startExperience() {
+            document.getElementById('start-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('start-screen').style.display = 'none';
+                document.getElementById('paper').classList.add('visible');
+                document.getElementById('audio-controls').style.display = 'flex';
+                
+                // Avvia Musica
+                backgroundMusic.play().catch(() => console.log("Audio non avviato automaticamente"));
+                
+                // Avvia Scrittura
+                setTimeout(typeWriter, 400);
+            }, 800);
+        }
+
+        function typeWriter() {
+            if (index < letterText.length) {
+                const char = letterText.charAt(index);
+                const typewriterElem = document.getElementById("typewriter");
+
+                typewriterElem.textContent += char;
+
+                // Suono del tasto (tranne per gli spazi)
+                if (char !== ' ' && char !== '\n') {
+                    playKeySound();
+                }
+
+                // Campanello se va a capo
+                if (char === '\n') {
+                    playBellSound();
+                }
+
+                index++;
+                
+                // Variazione casuale della velocità per simulare battitura reale
+                const randomSpeed = typingSpeed + (Math.random() * 40 - 20);
+                setTimeout(typeWriter, randomSpeed);
+            } else {
+                setTimeout(() => {
+                    document.getElementById('cursor').style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        function toggleMusic() {
+            const btn = document.getElementById('toggle-music');
+            if (musicPlaying) {
+                backgroundMusic.pause();
+                btn.textContent = '🎵 Musica: OFF';
+                musicPlaying = false;
+            } else {
+                backgroundMusic.play();
+                btn.textContent = '🎵 Musica: ON';
+                musicPlaying = true;
+            }
+        }
+    </script>
+</body>
+</html>
