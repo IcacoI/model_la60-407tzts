@@ -8,7 +8,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body {
-            background-color: #1a1815;
+            background-color: #121110;
             color: #fbf8ef;
             font-family: 'Special Elite', monospace;
             display: flex;
@@ -17,6 +17,15 @@
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
+            padding: 10px;
+        }
+
+        .header-title {
+            margin-bottom: 8px;
+            color: #d4af37;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-align: center;
         }
 
         #game-container {
@@ -24,10 +33,12 @@
             border: 4px solid #d4af37;
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            background: #2b2b2b;
+            max-width: 100%;
         }
 
         canvas {
-            background: #4a7c59; /* Prato anni '60 */
+            background: #3e6b48; /* Erba parco vintage */
             display: block;
         }
 
@@ -39,17 +50,17 @@
             transform: translate(-50%, -50%) scale(0.8);
             background: #fbf8ef;
             color: #2b2621;
-            padding: 25px;
+            padding: 22px;
             border-radius: 6px;
             border: 3px double #a83232;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
             text-align: center;
-            width: 85%;
-            max-width: 320px;
+            width: 88%;
+            max-width: 340px;
             display: none;
             opacity: 0;
             transition: all 0.3s ease;
-            z-index: 10;
+            z-index: 20;
         }
 
         #modal.active {
@@ -58,9 +69,10 @@
             transform: translate(-50%, -50%) scale(1);
         }
 
-        #modal h3 { color: #a83232; margin-bottom: 10px; }
-        #modal p { font-size: 0.95rem; line-height: 1.4; margin-bottom: 15px; }
-        #modal button {
+        #modal h3 { color: #a83232; margin-bottom: 8px; font-size: 1.1rem; }
+        #modal p { font-size: 0.9rem; line-height: 1.4; margin-bottom: 15px; }
+        
+        .modal-btn {
             background: #a83232;
             color: #fff;
             border: none;
@@ -68,15 +80,32 @@
             font-family: 'Special Elite', monospace;
             cursor: pointer;
             border-radius: 4px;
+            font-size: 0.85rem;
         }
 
-        /* Controlli Mobile */
+        /* Controlli Audio in alto a destra */
+        .audio-toggle-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(26, 24, 21, 0.85);
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            z-index: 15;
+        }
+
+        /* Controlli Mobile Touch */
         .touch-controls {
-            margin-top: 15px;
+            margin-top: 10px;
             display: grid;
-            grid-template-columns: repeat(3, 50px);
-            grid-template-rows: repeat(2, 50px);
-            gap: 5px;
+            grid-template-columns: repeat(3, 52px);
+            grid-template-rows: repeat(2, 52px);
+            gap: 6px;
         }
 
         .touch-btn {
@@ -97,26 +126,29 @@
         #btn-right { grid-column: 3; grid-row: 2; }
 
         @media (min-width: 768px) {
-            .touch-controls { display: none; } /* Nascondi touch su PC */
+            .touch-controls { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <h2 style="margin-bottom: 10px; color: #d4af37;">✦ Trova i 3 Vinili ✦</h2>
+    <div class="header-title">✦ Trova i Vinili nel Parco ✦</div>
 
     <div id="game-container">
-        <canvas id="gameCanvas" width="360" height="360"></canvas>
+        <!-- Tasto Muto/Audio -->
+        <button class="audio-toggle-btn" id="audio-btn" onclick="toggleAudio()">🎵 Audio: ON</button>
+
+        <canvas id="gameCanvas" width="550" height="550"></canvas>
         
         <!-- Modal Popup Ricordo -->
         <div id="modal">
             <h3 id="modal-title">Vinile Trovato!</h3>
             <p id="modal-text">Un bellissimo ricordo...</p>
-            <button onclick="closeModal()">Continua a cercare</button>
+            <button class="modal-btn" onclick="closeModal()">Continua la passeggiata</button>
         </div>
     </div>
 
-    <!-- Pulsanti touch per telefono -->
+    <!-- Controlli Mobile -->
     <div class="touch-controls">
         <div class="touch-btn" id="btn-up">▲</div>
         <div class="touch-btn" id="btn-left">◄</div>
@@ -128,30 +160,46 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Configurazione Giocatore
+        // Mappa ingrandita (550x550)
+        const MAP_WIDTH = canvas.width;
+        const MAP_HEIGHT = canvas.height;
+
+        // Stato Giocatore (Ragazza retro con capelli rossastri e occhi verdi)
         const player = {
-            x: 160,
-            y: 300,
-            size: 20,
-            speed: 3,
-            color: '#a83232' // Rosso vintage
+            x: 275,
+            y: 480,
+            radius: 14,
+            speed: 3.2,
+            facing: 'down'
         };
 
-        // I 3 Vinili/Ricordi nascosti (Personalizza qui i testi!)
+        // Canzone d'epoca morbida e tranquilla (Jazz/Bossa Lofi 60s)
+        let vinylAudio = new Audio("https://cdn.pixabay.com/download/audio/2022/11/06/audio_c0628e9d30.mp3");
+        vinylAudio.loop = true;
+        vinylAudio.volume = 0.3;
+        let isMuted = false;
+
+        // I 3 Vinili/Ricordi nascosti sulla mappa
         const vinyls = [
-            { x: 60, y: 70, size: 16, collected: false, title: "📻 1° Vinile: Il Primo Ciao", text: "Ricordi la nostra primissima chiamata? Ore volate senza accorgercene...", audio: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3" },
-            { x: 290, y: 120, size: 16, collected: false, title: "🎷 2° Vinile: Canzone Anni '60", text: "Questa canzone mi fa sempre pensare alla tua risata...", audio: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" },
-            { x: 180, y: 50, size: 16, collected: false, title: "❤️ 3° Vinile: 2° Mese Insieme", text: "Hai trovato tutti i vinili! Anche a distanza, sei la mia parte preferita di ogni giornata.", audio: "" }
+            { id: 1, x: 100, y: 120, radius: 18, collected: false, title: "📻 1° Vinile: Il Primo Ciao", text: "Ricordi la nostra primissima chiamata? Ore e ore volate via senza nemmeno accorgercene..." },
+            { id: 2, x: 440, y: 180, radius: 18, collected: false, title: "🎷 2° Vinile: Melodia Anni '60", text: "Questa atmosfera rilassante mi fa sempre pensare alla tua dolcezza e al tuo sorriso..." },
+            { id: 3, x: 275, y: 80, radius: 18, collected: false, title: "❤️ 3° Vinile: 2 Mesi di Noi", text: "Anche se c'è la distanza a separarci, sei il mio pensiero fisso e la parte migliore di ogni giornata." }
         ];
 
-        let currentAudio = null;
+        // Elementi decorativi stile Parco Anni '60
+        const trees = [
+            { x: 50, y: 50, r: 35 }, { x: 500, y: 60, r: 40 },
+            { x: 480, y: 460, r: 35 }, { x: 70, y: 440, r: 38 },
+            { x: 275, y: 280, r: 45 }
+        ];
+
         const keys = {};
 
-        // Gestione Input Tastiera (PC)
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
+        // Controlli Tastiera
+        window.addEventListener('keydown', e => { keys[e.key] = true; });
+        window.addEventListener('keyup', e => { keys[e.key] = false; });
 
-        // Gestione Input Touch (Mobile)
+        // Controlli Touch
         const bindTouch = (id, key) => {
             const btn = document.getElementById(id);
             btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
@@ -162,18 +210,42 @@
         bindTouch('btn-left', 'ArrowLeft');
         bindTouch('btn-right', 'ArrowRight');
 
-        function update() {
-            // Movimento
-            if ((keys['ArrowUp'] || keys['w']) && player.y > player.size) player.y -= player.speed;
-            if ((keys['ArrowDown'] || keys['s']) && player.y < canvas.height - player.size) player.y += player.speed;
-            if ((keys['ArrowLeft'] || keys['a']) && player.x > player.size) player.x -= player.speed;
-            if ((keys['ArrowRight'] || keys['d']) && player.x < canvas.width - player.size) player.x += player.speed;
+        function toggleAudio() {
+            const btn = document.getElementById('audio-btn');
+            isMuted = !isMuted;
+            if (isMuted) {
+                vinylAudio.pause();
+                btn.innerText = "🔇 Audio: OFF";
+            } else {
+                if (!vinylAudio.paused || vinylAudio.currentTime > 0) {
+                    vinylAudio.play().catch(()=>{});
+                }
+                btn.innerText = "🎵 Audio: ON";
+            }
+        }
 
-            // Collisioni con Vinili
+        function update() {
+            let dx = 0, dy = 0;
+            if (keys['ArrowUp'] || keys['w']) { dy -= 1; player.facing = 'up'; }
+            if (keys['ArrowDown'] || keys['s']) { dy += 1; player.facing = 'down'; }
+            if (keys['ArrowLeft'] || keys['a']) { dx -= 1; player.facing = 'left'; }
+            if (keys['ArrowRight'] || keys['d']) { dx += 1; player.facing = 'right'; }
+
+            if (dx !== 0 && dy !== 0) {
+                dx *= 0.7071;
+                dy *= 0.7071;
+            }
+
+            player.x += dx * player.speed;
+            player.y += dy * player.speed;
+
+            player.x = Math.max(player.radius + 5, Math.min(MAP_WIDTH - player.radius - 5, player.x));
+            player.y = Math.max(player.radius + 5, Math.min(MAP_HEIGHT - player.radius - 5, player.y));
+
             vinyls.forEach(v => {
                 if (!v.collected) {
                     const dist = Math.hypot(player.x - v.x, player.y - v.y);
-                    if (dist < player.size + v.size) {
+                    if (dist < player.radius + v.radius) {
                         v.collected = true;
                         showModal(v);
                     }
@@ -181,51 +253,153 @@
             });
         }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Disegno Vinile Dettagliato
+        function drawDetailedVinyl(x, y, radius) {
+            ctx.save();
+            ctx.translate(x, y);
 
-            // Disegna elementi mappa (Alberi vintage)
-            ctx.fillStyle = '#2d5a3f';
-            ctx.beginPath(); ctx.arc(50, 200, 25, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(310, 260, 30, 0, Math.PI * 2); ctx.fill();
+            // Ombra sottostante
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.arc(2, 4, radius, 0, Math.PI * 2);
+            ctx.fill();
 
-            // Disegna Vinili (se non ancora raccolti)
+            // Disco Vinile Nero
+            ctx.fillStyle = '#111111';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Solchi del vinile
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(0, 0, radius * 0.8, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 0, radius * 0.65, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 0, radius * 0.5, 0, Math.PI * 2); ctx.stroke();
+
+            // Etichetta Centrale Rosso Vintage
+            ctx.fillStyle = '#c43c3c';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Foro centrale
+            ctx.fillStyle = '#fbf8ef';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Riflesso di luce lucido (Stile 60s)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, radius, -Math.PI / 4, -Math.PI / 12);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // Disegno Ragazza Retro (Capelli Rossastri & Occhi Verdi)
+        function drawPlayer(x, y) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Ombra ai piedi
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.beginPath();
+            ctx.ellipse(0, 12, 12, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Chioma Capelli Rossastri (Volume)
+            ctx.fillStyle = '#b84a29'; // Rosso rame/auburn
+            ctx.beginPath();
+            ctx.arc(0, -2, 16, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Veste Anni '60
+            ctx.fillStyle = '#e6b800';
+            ctx.beginPath();
+            ctx.arc(0, 4, 11, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Visetto
+            ctx.fillStyle = '#ffdfc4';
+            ctx.beginPath();
+            ctx.arc(0, -3, 9, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Frangetta Capelli Rossastri
+            ctx.fillStyle = '#b84a29';
+            ctx.beginPath();
+            ctx.arc(0, -7, 9, Math.PI * 0.9, Math.PI * 2.1);
+            ctx.fill();
+
+            // Occhi Verdi Retro
+            ctx.fillStyle = '#2e8b57';
+            ctx.beginPath(); ctx.arc(-3, -3, 2.2, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(3, -3, 2.2, 0, Math.PI * 2); ctx.fill();
+
+            // Punti Luce Bianchi
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.arc(-3.5, -3.5, 0.8, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(2.5, -3.5, 0.8, 0, Math.PI * 2); ctx.fill();
+
+            // Fiocchetto Anni '60
+            ctx.fillStyle = '#a83232';
+            ctx.beginPath(); ctx.arc(-6, -11, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(-1, -12, 2, 0, Math.PI * 2); ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawMapDecoration() {
+            // Sentiero in ghiaia vintage
+            ctx.fillStyle = '#5c4838';
+            ctx.beginPath();
+            ctx.arc(275, 275, 180, 0, Math.PI * 2);
+            ctx.lineWidth = 20;
+            ctx.strokeStyle = '#8c6d53';
+            ctx.stroke();
+
+            // Alberi
+            trees.forEach(t => {
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath(); ctx.arc(t.x + 4, t.y + 6, t.r, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#274e31';
+                ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#346640';
+                ctx.beginPath(); ctx.arc(t.x - 3, t.y - 3, t.r * 0.75, 0, Math.PI * 2); ctx.fill();
+            });
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+            drawMapDecoration();
+
             vinyls.forEach(v => {
                 if (!v.collected) {
-                    // Disco Vinile
-                    ctx.fillStyle = '#111';
-                    ctx.beginPath(); ctx.arc(v.x, v.y, v.size, 0, Math.PI * 2); ctx.fill();
-                    // Centro Vinile Rosso
-                    ctx.fillStyle = '#d4af37';
-                    ctx.beginPath(); ctx.arc(v.x, v.y, 5, 0, Math.PI * 2); ctx.fill();
+                    drawDetailedVinyl(v.x, v.y, v.radius);
                 }
             });
 
-            // Disegna Personaggio (Stile Pedina / Avatare Anni '60)
-            ctx.fillStyle = player.color;
-            ctx.beginPath(); ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2); ctx.fill();
-            // Piccolo dettaglio vintage (Cappellino/Fiocco)
-            ctx.fillStyle = '#d4af37';
-            ctx.beginPath(); ctx.arc(player.x, player.y - 4, 4, 0, Math.PI * 2); ctx.fill();
+            drawPlayer(player.x, player.y);
         }
 
         function gameLoop() {
             update();
-            draw();
+            render();
             requestAnimationFrame(gameLoop);
         }
 
         function showModal(vinyl) {
             document.getElementById('modal-title').innerText = vinyl.title;
             document.getElementById('modal-text').innerText = vinyl.text;
-            const modal = document.getElementById('modal');
-            modal.classList.add('active');
+            document.getElementById('modal').classList.add('active');
 
-            // Riproduci Audio Vinile
-            if (vinyl.audio) {
-                if (currentAudio) currentAudio.pause();
-                currentAudio = new Audio(vinyl.audio);
-                currentAudio.play().catch(() => {});
+            if (!isMuted) {
+                vinylAudio.play().catch(() => {});
             }
         }
 
