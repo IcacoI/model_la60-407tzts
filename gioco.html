@@ -174,7 +174,7 @@
         };
 
         // Canzone d'epoca morbida e tranquilla (Jazz/Bossa Lofi 60s)
-        let vinylAudio = new Audio("https://cdn.pixabay.com/download/audio/2022/11/06/audio_c0628e9d30.mp3");
+        let vinylAudio = new Audio("canzone.mp3");
         vinylAudio.loop = true;
         vinylAudio.volume = 0.3;
         let isMuted = false;
@@ -217,9 +217,7 @@
                 vinylAudio.pause();
                 btn.innerText = "🔇 Audio: OFF";
             } else {
-                if (!vinylAudio.paused || vinylAudio.currentTime > 0) {
-                    vinylAudio.play().catch(()=>{});
-                }
+                vinylAudio.play().catch(e => console.log("Audio non avviato:", e));
                 btn.innerText = "🎵 Audio: ON";
             }
         }
@@ -399,7 +397,7 @@
             document.getElementById('modal').classList.add('active');
 
             if (!isMuted) {
-                vinylAudio.play().catch(() => {});
+                vinylAudio.play().catch(e => console.log("Blocco audio sbloccato:", e));
             }
         }
 
