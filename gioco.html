@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Caccia ai Vinili '60s</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #1a1815;
+            color: #fbf8ef;
+            font-family: 'Special Elite', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            border: 4px solid #d4af37;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        canvas {
+            background: #4a7c59; /* Prato anni '60 */
+            display: block;
+        }
+
+        /* Modal Ricordo */
+        #modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: #fbf8ef;
+            color: #2b2621;
+            padding: 25px;
+            border-radius: 6px;
+            border: 3px double #a83232;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 85%;
+            max-width: 320px;
+            display: none;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        #modal.active {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        #modal h3 { color: #a83232; margin-bottom: 10px; }
+        #modal p { font-size: 0.95rem; line-height: 1.4; margin-bottom: 15px; }
+        #modal button {
+            background: #a83232;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Special Elite', monospace;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Controlli Mobile */
+        .touch-controls {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(2, 50px);
+            gap: 5px;
+        }
+
+        .touch-btn {
+            background: #2d2923;
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .touch-btn:active { background: #d4af37; color: #1a1815; }
+        #btn-up { grid-column: 2; grid-row: 1; }
+        #btn-left { grid-column: 1; grid-row: 2; }
+        #btn-down { grid-column: 2; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
+
+        @media (min-width: 768px) {
+            .touch-controls { display: none; } /* Nascondi touch su PC */
+        }
+    </style>
+</head>
+<body>
+
+    <h2 style="margin-bottom: 10px; color: #d4af37;">✦ Trova i 3 Vinili ✦</h2>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="360" height="360"></canvas>
+        
+        <!-- Modal Popup Ricordo -->
+        <div id="modal">
+            <h3 id="modal-title">Vinile Trovato!</h3>
+            <p id="modal-text">Un bellissimo ricordo...</p>
+            <button onclick="closeModal()">Continua a cercare</button>
+        </div>
+    </div>
+
+    <!-- Pulsanti touch per telefono -->
+    <div class="touch-controls">
+        <div class="touch-btn" id="btn-up">▲</div>
+        <div class="touch-btn" id="btn-left">◄</div>
+        <div class="touch-btn" id="btn-down">▼</div>
+        <div class="touch-btn" id="btn-right">►</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Configurazione Giocatore
+        const player = {
+            x: 160,
+            y: 300,
+            size: 20,
+            speed: 3,
+            color: '#a83232' // Rosso vintage
+        };
+
+        // I 3 Vinili/Ricordi nascosti (Personalizza qui i testi!)
+        const vinyls = [
+            { x: 60, y: 70, size: 16, collected: false, title: "📻 1° Vinile: Il Primo Ciao", text: "Ricordi la nostra primissima chiamata? Ore volate senza accorgercene...", audio: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3" },
+            { x: 290, y: 120, size: 16, collected: false, title: "🎷 2° Vinile: Canzone Anni '60", text: "Questa canzone mi fa sempre pensare alla tua risata...", audio: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" },
+            { x: 180, y: 50, size: 16, collected: false, title: "❤️ 3° Vinile: 2° Mese Insieme", text: "Hai trovato tutti i vinili! Anche a distanza, sei la mia parte preferita di ogni giornata.", audio: "" }
+        ];
+
+        let currentAudio = null;
+        const keys = {};
+
+        // Gestione Input Tastiera (PC)
+        window.addEventListener('keydown', e => keys[e.key] = true);
+        window.addEventListener('keyup', e => keys[e.key] = false);
+
+        // Gestione Input Touch (Mobile)
+        const bindTouch = (id, key) => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+        };
+        bindTouch('btn-up', 'ArrowUp');
+        bindTouch('btn-down', 'ArrowDown');
+        bindTouch('btn-left', 'ArrowLeft');
+        bindTouch('btn-right', 'ArrowRight');
+
+        function update() {
+            // Movimento
+            if ((keys['ArrowUp'] || keys['w']) && player.y > player.size) player.y -= player.speed;
+            if ((keys['ArrowDown'] || keys['s']) && player.y < canvas.height - player.size) player.y += player.speed;
+            if ((keys['ArrowLeft'] || keys['a']) && player.x > player.size) player.x -= player.speed;
+            if ((keys['ArrowRight'] || keys['d']) && player.x < canvas.width - player.size) player.x += player.speed;
+
+            // Collisioni con Vinili
+            vinyls.forEach(v => {
+                if (!v.collected) {
+                    const dist = Math.hypot(player.x - v.x, player.y - v.y);
+                    if (dist < player.size + v.size) {
+                        v.collected = true;
+                        showModal(v);
+                    }
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Disegna elementi mappa (Alberi vintage)
+            ctx.fillStyle = '#2d5a3f';
+            ctx.beginPath(); ctx.arc(50, 200, 25, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(310, 260, 30, 0, Math.PI * 2); ctx.fill();
+
+            // Disegna Vinili (se non ancora raccolti)
+            vinyls.forEach(v => {
+                if (!v.collected) {
+                    // Disco Vinile
+                    ctx.fillStyle = '#111';
+                    ctx.beginPath(); ctx.arc(v.x, v.y, v.size, 0, Math.PI * 2); ctx.fill();
+                    // Centro Vinile Rosso
+                    ctx.fillStyle = '#d4af37';
+                    ctx.beginPath(); ctx.arc(v.x, v.y, 5, 0, Math.PI * 2); ctx.fill();
+                }
+            });
+
+            // Disegna Personaggio (Stile Pedina / Avatare Anni '60)
+            ctx.fillStyle = player.color;
+            ctx.beginPath(); ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2); ctx.fill();
+            // Piccolo dettaglio vintage (Cappellino/Fiocco)
+            ctx.fillStyle = '#d4af37';
+            ctx.beginPath(); ctx.arc(player.x, player.y - 4, 4, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function showModal(vinyl) {
+            document.getElementById('modal-title').innerText = vinyl.title;
+            document.getElementById('modal-text').innerText = vinyl.text;
+            const modal = document.getElementById('modal');
+            modal.classList.add('active');
+
+            // Riproduci Audio Vinile
+            if (vinyl.audio) {
+                if (currentAudio) currentAudio.pause();
+                currentAudio = new Audio(vinyl.audio);
+                currentAudio.play().catch(() => {});
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
