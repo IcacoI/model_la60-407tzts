@@ -173,10 +173,10 @@
             facing: 'down'
         };
 
-        // Canzone d'epoca morbida e tranquilla (Jazz/Bossa Lofi 60s)
+        // Canzone personalizzata in file canzone.mp3
         let vinylAudio = new Audio("canzone.mp3");
         vinylAudio.loop = true;
-        vinylAudio.volume = 0.3;
+        vinylAudio.volume = 0.5;
         let isMuted = false;
 
         // I 3 Vinili/Ricordi nascosti sulla mappa
@@ -217,7 +217,7 @@
                 vinylAudio.pause();
                 btn.innerText = "🔇 Audio: OFF";
             } else {
-                vinylAudio.play().catch(e => console.log("Audio non avviato:", e));
+                vinylAudio.play().catch(e => console.log("Errore riproduzione:", e));
                 btn.innerText = "🎵 Audio: ON";
             }
         }
@@ -396,8 +396,9 @@
             document.getElementById('modal-text').innerText = vinyl.text;
             document.getElementById('modal').classList.add('active');
 
+            // Avvia la musica appena tocca un vinile (l'interazione sblocca anche l'audio del telefono)
             if (!isMuted) {
-                vinylAudio.play().catch(e => console.log("Blocco audio sbloccato:", e));
+                vinylAudio.play().catch(e => console.log("Audio sbloccato al tocco:", e));
             }
         }
 
