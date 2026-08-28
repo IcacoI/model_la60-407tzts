@@ -263,21 +263,29 @@ Con tutto il mio affetto,
         }
 
         function typeWriter() {
-            if (index < letterText.length) {
-                const char = letterText.charAt(index);
-                document.getElementById("typewriter").textContent += char;
+    if (index < letterText.length) {
+        const char = letterText.charAt(index);
+        document.getElementById("typewriter").textContent += char;
 
-                if (char !== ' ' && char !== '\n') playKeySound();
-                if (char === '\n') playBellSound();
+        if (char !== ' ' && char !== '\n') playKeySound();
+        if (char === '\n') playBellSound();
 
-                index++;
-                setTimeout(typeWriter, typingSpeed + (Math.random() * 40 - 20));
-            } else {
-                setTimeout(() => {
-                    document.getElementById('cursor').style.display = 'none';
-                }, 2000);
-            }
-        }
+        index++;
+        setTimeout(typeWriter, typingSpeed + (Math.random() * 40 - 20));
+    } else {
+        // Scrittura completata: mostra il pulsante per il gioco
+        setTimeout(() => {
+            document.getElementById('cursor').style.display = 'none';
+            
+            // Crea pulsante per il gioco
+            const btn = document.createElement('button');
+            btn.innerHTML = '🎮 Entra nel Mini-Gioco Anni \'60';
+            btn.style.cssText = 'display:block; margin:30px auto 0; background:#a83232; color:#fff; border:none; padding:12px 24px; font-family:"Special Elite",monospace; font-size:1rem; cursor:pointer; border-radius:4px; box-shadow:0 4px 10px rgba(0,0,0,0.3);';
+            btn.onclick = () => window.location.href = 'gioco.html';
+            document.getElementById('paper').appendChild(btn);
+        }, 1500);
+    }
+}
 
         function toggleMusic() {
             const btn = document.getElementById('toggle-music');
